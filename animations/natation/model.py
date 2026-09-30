@@ -325,8 +325,6 @@ def body_tubes(P):
             True,
             True,
         )
-        # jambe de la trifonction
-        T["suit" + s] = capped(segment(hp, kn, PROF_TH, lb, u1=0.42, scale=1.04), True, False)
     return T
 
 

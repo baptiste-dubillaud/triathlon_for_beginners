@@ -27,26 +27,25 @@ STYLE = """
 .bg{fill:#ffffff}.card{fill:#f8f9fa}.frame{fill:none;stroke:rgba(0,0,0,.1)}
 .pool{fill:#e4eef6}.pooltop{fill:#d6e6f2}.laneline{fill:#2c3e50;opacity:.12}
 .t1{fill:#1a202c}.t2{fill:#4a5568}.t3{fill:#718096}.track{fill:#e9ecef}.div{stroke:rgba(0,0,0,.08)}
-.chip{fill:#ffffff;stroke:rgba(0,0,0,.1)}.water{fill:#2f7fc1;opacity:.13}.surf{stroke:#2f7fc1}
+.chip{fill:#ffffff;stroke:rgba(0,0,0,.1)}.surf{stroke:#2f7fc1}
 .trail{stroke:#2c3e50}
 @media (prefers-color-scheme: dark){
 .bg{fill:#222222}.card{fill:#282828}.frame{stroke:rgba(84,84,84,.65)}
 .pool{fill:#1d2b37}.pooltop{fill:#22364a}.laneline{fill:#e9ecef;opacity:.1}
 .t1{fill:#ffffff}.t2{fill:#f8f9fa}.t3{fill:#c9ced6}.track{fill:#3a3a3a}.div{stroke:rgba(84,84,84,.65)}
-.chip{fill:#222222;stroke:rgba(84,84,84,.65)}.water{fill:#3d8fd6;opacity:.22}.surf{stroke:#5aa6e6}
+.chip{fill:#222222;stroke:rgba(84,84,84,.65)}.surf{stroke:#5aa6e6}
 .trail{stroke:#e9ecef}}
 """
 
 GRADIENTS = {
-    "skinN": ("#f4d0b1", "#d49b76"),
-    "skinF": ("#d9ad8c", "#ad7a58"),
-    "suitN": ("#3f5a75", "#1f2d3b"),
-    "suitF": ("#30465c", "#18222d"),
-    "cap": ("#f68a4e", "#d85a1c"),
-    "prop": ("#f79a63", "#e0601f"),
+    # nageur neutre (mannequin gris clair) : seuls les muscles sollicités sont en couleur
+    "skinN": ("#f7f8fa", "#d3d8df"),
+    "skinF": ("#e1e5ea", "#b9c0c9"),
+    "cap": ("#c9ced6", "#a3abb6"),
+    "prop": ("#eef0f3", "#cfd4db"),
 }
-SKIN_STROKE = "#8a5a3f"
-SUIT_STROKE = "#141d27"
+SKIN_STROKE = "#5d6875"
+NEUTRAL_STROKE = "#7c8793"
 
 VIEW_LABELS = {"side": "Vue de côté", "top": "Vue de dessus", "topv": "Vue de dessus", "front": "Vue de face"}
 VIEW_HINTS = {"side": "sens de nage →", "top": "sens de nage →", "topv": "sens de nage ↑", "front": "le nageur arrive vers vous"}
@@ -279,8 +278,8 @@ class Exercise:
             )
         for name, col in MUSCLE_COLORS.items():
             o.append(
-                '<radialGradient id="mg-%s" cx=".5" cy=".5" r=".55"><stop offset="0" stop-color="%s" stop-opacity=".95"/>'
-                '<stop offset=".65" stop-color="%s" stop-opacity=".7"/><stop offset="1" stop-color="%s" stop-opacity=".25"/></radialGradient>'
+                '<radialGradient id="mg-%s" cx=".5" cy=".5" r=".55"><stop offset="0" stop-color="%s" stop-opacity="1"/>'
+                '<stop offset=".7" stop-color="%s" stop-opacity=".85"/><stop offset="1" stop-color="%s" stop-opacity=".45"/></radialGradient>'
                 % (name, col, col, col)
             )
         o.append("</defs>")
@@ -343,7 +342,7 @@ class Exercise:
         return (T, {k: v[1] for k, v in MT.items()})
 
     def tube_keys(self):
-        keys = set(["torso", "neck", "head", "cap", "armL", "armR", "legL", "legR", "suitL", "suitR"])
+        keys = set(["torso", "neck", "head", "cap", "armL", "armR", "legL", "legR"])
         return keys | {m[0] for m in self.muscle_items} | {p[0] for p in self.props}
 
     def fit_box(self, view, data, tubes, fit):
@@ -408,12 +407,10 @@ class Exercise:
             return '<path d="%s" %s>%s%s</path>' % (ds[0], attrs, an.linear("d", ds), extra)
 
         def body_attrs(kind, near):
-            if kind == "skin":
-                return 'fill="url(#skin%s)" stroke="%s" stroke-opacity=".55" stroke-width="1" stroke-linejoin="round"' % (
-                    "N" if near else "F",
-                    SKIN_STROKE,
-                )
-            return 'fill="url(#suit%s)" stroke="%s" stroke-opacity=".7" stroke-width="1" stroke-linejoin="round"' % ("N" if near else "F", SUIT_STROKE)
+            return 'fill="url(#skin%s)" stroke="%s" stroke-opacity=".6" stroke-width="1" stroke-linejoin="round"' % (
+                "N" if near else "F",
+                SKIN_STROKE,
+            )
 
         def muscle_svg(item):
             key, muscle, act, _ = item
@@ -422,12 +419,12 @@ class Exercise:
             for (P, A), (_, vis_dirs) in zip(self.data, self.tubes):
                 vd = vis_dirs.get(key)
                 vis = 1.0 if vd is None else clamp(0.55 + 1.3 * dot(normalize(vd), CAM[view]))
-                ops.append("%.2f" % ((0.1 + 0.78 * clamp(A[act])) * vis))
+                ops.append("%.2f" % ((0.04 + 0.96 * clamp(A[act]) ** 1.2) * vis))
             gid = "mg-" + [k for k, c in MUSCLE_COLORS.items() if c == col][0]
             return shape(key, 26, 'fill="url(#%s)" stroke="%s" stroke-width=".8" stroke-opacity=".5"' % (gid, col), ops)
 
         def prop_svg(key):
-            return shape(key, 30, 'fill="url(#prop)" stroke="%s" stroke-width="1.2" stroke-linejoin="round"' % ACCENT_DARK)
+            return shape(key, 30, 'fill="url(#prop)" stroke="%s" stroke-width="1.2" stroke-linejoin="round"' % NEUTRAL_STROKE)
 
         o.append('<clipPath id="%s"><rect x="%d" y="%d" width="%d" height="%d" rx="5"/></clipPath>' % (cid, vx, vy, vw, vh))
         o.append('<g clip-path="url(#%s)">' % cid)
@@ -470,8 +467,6 @@ class Exercise:
             near = near_side[g]
             out = ['<g opacity="%s">%s' % (vis[0], an.discrete("opacity", vis))]
             out.append(shape(g, 44, body_attrs("skin", near)))
-            if g.startswith("leg"):
-                out.append(shape("suit" + g[-1], 24, body_attrs("suit", near)))
             for item in self.muscle_items:
                 if item[3] == g:
                     out.append(muscle_svg(item))
@@ -487,7 +482,7 @@ class Exercise:
         for key, layer in self.props:
             if layer == "back":
                 o.append(prop_svg(key))
-        o.append(shape("torso", 44, body_attrs("suit", True)))
+        o.append(shape("torso", 44, body_attrs("skin", True)))
         for item in self.muscle_items:
             if item[3] == "torso":
                 o.append(muscle_svg(item))
@@ -496,7 +491,7 @@ class Exercise:
             if item[3] == "neck":
                 o.append(muscle_svg(item))
         o.append(shape("head", 30, body_attrs("skin", True)))
-        o.append(shape("cap", 30, 'fill="url(#cap)" stroke="%s" stroke-width="1" stroke-linejoin="round"' % ACCENT_DARK))
+        o.append(shape("cap", 30, 'fill="url(#cap)" stroke="%s" stroke-opacity=".7" stroke-width="1" stroke-linejoin="round"' % NEUTRAL_STROKE))
         o.extend(self.goggles(view, S))
         for key, layer in self.props:
             if layer == "mid":
@@ -519,7 +514,6 @@ class Exercise:
                 )
 
         if view not in ("top", "topv"):
-            o.append('<rect class="water" x="%d" y="%s" width="%d" height="%s"/>' % (vx, fmt(surf_y), vw, fmt(vy + vh - surf_y)))
             n = int(vw / 24) + 2
             o.append(
                 '<path class="surf" d="M%d %s%s" fill="none" stroke-width="1.8" stroke-linecap="round"/>'
@@ -573,8 +567,8 @@ class Exercise:
                 ds.append("M" + " ".join("%s %s" % (fmt(x), fmt(y)) for x, y in pts) + " Z")
                 ops.append("%.2f" % clamp((dot(n, CAM[view]) + 0.15) * 4))
             o.append(
-                '<path d="%s" fill="#1a202c" stroke="%s" stroke-width="1.6" stroke-linejoin="round" opacity="%s">%s%s</path>'
-                % (ds[0], ACCENT, ops[0], self.an.linear("d", ds), self.an.linear("opacity", ops))
+                '<path d="%s" fill="#2d3540" stroke="%s" stroke-width="1.2" stroke-linejoin="round" opacity="%s">%s%s</path>'
+                % (ds[0], NEUTRAL_STROKE, ops[0], self.an.linear("d", ds), self.an.linear("opacity", ops))
             )
         return o
 
