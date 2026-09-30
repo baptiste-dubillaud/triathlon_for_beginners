@@ -254,7 +254,7 @@ class SideKickBreath(Exercise):
         body = Body(origin=(0.0, 0.0, -0.05), roll=-72.0)  # couché sur le côté gauche
         torso_points(P, body)
         # bras du bas tendu devant, sous la tête (direction donnée dans le repère monde)
-        fwd = rotx(normalize((1.0, 0.03, -0.16)), 72.0)
+        fwd = rotx(normalize((1.0, 0.03, -0.07)), 72.0)
         straight_arm(P, body, "L", (fwd[0], fwd[1], fwd[2]))
         straight_arm(P, body, "R", (-1.0, -0.02, 0.1))
         P["v_handbackR"] = body.d((0.0, -1.0, 0.0))

@@ -62,7 +62,7 @@ def _cam(az, el):
     return c, right, up
 
 
-FREE_CAMS = {"front34": _cam(38, 28)}
+FREE_CAMS = {"front34": _cam(40, 0)}  # à hauteur d'eau : la surface reste une ligne
 VIEW_LABELS["front34"] = "Vue 3/4 avant"
 VIEW_HINTS["front34"] = "le nageur arrive vers vous"
 CAM["front34"] = FREE_CAMS["front34"][0]
