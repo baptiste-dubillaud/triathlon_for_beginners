@@ -28,3 +28,7 @@ python3 generate.py 02     # un seul exercice
 - `model.py` : le nageur 3D. Squelette articulé, chaque partie du corps est un volume à sections elliptiques (épaules, mollets, quadriceps…).
 - `exercises.py` : la cinématique, les phases, les muscles et les conseils de chaque éducatif.
 - `render.py` : la projection selon chaque vue, le calcul des silhouettes (union des volumes projetés) et l'écriture du SVG animé.
+
+## Démos vidéo
+
+Les enregistrements MP4 (25 i/s, 2 à 3 cycles) sont dans [`demos/`](demos) : pratique pour les partager ou les voir sur téléphone.
